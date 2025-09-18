@@ -1,4 +1,4 @@
-Practica 1 - Desarrollo de Sistemas Móviles
+Practica 2 - Desarrollo de Sistemas Móviles
 
   Profesor: Uscuchagua Flores, Gelber 
   
