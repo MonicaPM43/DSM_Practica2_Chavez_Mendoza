@@ -1,8 +1,10 @@
 // Clase base Cuenta
-open class Cuenta(protected var saldo: Float, protected var tasaAnual: Float) {
-    // Atributos protegidos (accesibles desde las clases hijas)
+open class Cuenta(saldoInicial: Float, tasaAnualInicial: Float) {
+    // Atributos protegidos
+    protected var saldo: Float = saldoInicial
     protected var numConsignaciones: Int = 0
     protected var numRetiros: Int = 0
+    protected var tasaAnual: Float = tasaAnualInicial
     protected var comisionMensual: Float = 0.0f
 
     // Método para consignar dinero
@@ -45,15 +47,13 @@ open class Cuenta(protected var saldo: Float, protected var tasaAnual: Float) {
 }
 
 // Clase hija CuentaAhorros
-class CuentaAhorros(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual) {
-    private var activa: Boolean = saldo >= 10000   // Una cuenta está activa si saldo >= 10000
+class CuentaAhorros(saldoInicial: Float, tasaAnualInicial: Float) : Cuenta(saldoInicial, tasaAnualInicial) {
+    private var activa: Boolean = saldo >= 10000   // Activa si saldo >= 10000
 
-    // Método privado para verificar si la cuenta sigue activa
     private fun actualizarEstado() {
         activa = saldo >= 10000
     }
 
-    // Redefinición de consignar
     override fun consignar(cantidad: Float) {
         if (activa) {
             super.consignar(cantidad)
@@ -63,7 +63,6 @@ class CuentaAhorros(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual) {
         }
     }
 
-    // Redefinición de retirar
     override fun retirar(cantidad: Float) {
         if (activa) {
             super.retirar(cantidad)
@@ -73,17 +72,14 @@ class CuentaAhorros(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual) {
         }
     }
 
-    // Redefinición de extracto mensual
     override fun extracto() {
         if (numRetiros > 4) {
-            // Por cada retiro adicional a 4 se cobra 1000
             comisionMensual += (numRetiros - 4) * 1000
         }
         super.extracto()
         actualizarEstado()
     }
 
-    // Nuevo imprimir para mostrar transacciones
     override fun imprimir() {
         super.imprimir()
         println("Cuenta activa: $activa")
@@ -92,10 +88,9 @@ class CuentaAhorros(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual) {
 }
 
 // Clase hija CuentaCorriente
-class CuentaCorriente(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual) {
-    private var sobregiro: Float = 0.0f   // Valor de sobregiro (cuando retira más del saldo)
+class CuentaCorriente(saldoInicial: Float, tasaAnualInicial: Float) : Cuenta(saldoInicial, tasaAnualInicial) {
+    private var sobregiro: Float = 0.0f
 
-    // Redefinición de retirar: permite sobregiro
     override fun retirar(cantidad: Float) {
         if (cantidad > saldo) {
             sobregiro += cantidad - saldo
@@ -107,16 +102,13 @@ class CuentaCorriente(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual)
         }
     }
 
-    // Redefinición de consignar: primero cubre sobregiro
     override fun consignar(cantidad: Float) {
         if (sobregiro > 0) {
             if (cantidad >= sobregiro) {
-                // Si lo consignado cubre el sobregiro
                 val resto = cantidad - sobregiro
                 sobregiro = 0.0f
                 saldo += resto
             } else {
-                // Solo se reduce el sobregiro
                 sobregiro -= cantidad
             }
         } else {
@@ -125,7 +117,6 @@ class CuentaCorriente(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual)
         numConsignaciones++
     }
 
-    // Redefinición de imprimir
     override fun imprimir() {
         super.imprimir()
         println("Sobregiro: $sobregiro")
@@ -135,19 +126,16 @@ class CuentaCorriente(saldo: Float, tasaAnual: Float) : Cuenta(saldo, tasaAnual)
 
 // Método main para probar
 fun main() {
-    // Crear una cuenta de ahorros
-    val cuentaAhorros = CuentaAhorros(12000f, 0.05f)  // saldo inicial = 12000, tasa anual 5%
-
+    println("---- Cuenta de Ahorros ----")
+    val cuentaAhorros = CuentaAhorros(12000f, 0.05f) // saldo inicial 12000, tasa 5%
     cuentaAhorros.imprimir()
 
-    // Hacemos algunas operaciones
     cuentaAhorros.retirar(3000f)
     cuentaAhorros.consignar(2000f)
     cuentaAhorros.retirar(5000f)
     cuentaAhorros.retirar(1000f)
-    cuentaAhorros.retirar(500f)  // aquí ya serían más de 4 retiros, se cobrará comisión
+    cuentaAhorros.retirar(500f)  // Aquí ya más de 4 retiros
 
-    // Generar extracto mensual
     cuentaAhorros.extracto()
     cuentaAhorros.imprimir()
 
@@ -155,9 +143,9 @@ fun main() {
     val cuentaCorriente = CuentaCorriente(5000f, 0.04f)
     cuentaCorriente.imprimir()
 
-    cuentaCorriente.retirar(8000f)  // genera sobregiro
+    cuentaCorriente.retirar(8000f) // genera sobregiro
     cuentaCorriente.imprimir()
 
-    cuentaCorriente.consignar(4000f)  // reduce sobregiro
+    cuentaCorriente.consignar(4000f) // reduce sobregiro
     cuentaCorriente.imprimir()
 }
